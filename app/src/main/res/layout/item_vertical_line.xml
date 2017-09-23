@@ -4,11 +4,14 @@
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
 
-    <View
+    <ProgressBar
         android:id="@+id/v__line"
+        style="@android:style/Widget.ProgressBar.Horizontal"
         android:layout_width="2dp"
         android:layout_height="100dp"
         android:layout_marginLeft="8dp"
-        android:background="@color/colorAccent"/>
+        android:max="1000"
+        android:progress="100"
+        android:progressDrawable="@drawable/progress_scale_drawable"/>
 
 </LinearLayout>
