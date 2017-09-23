@@ -2,6 +2,7 @@ package nthtrung09it.android.hello.animation;
 
 import android.animation.Animator;
 import android.animation.ValueAnimator;
+import android.app.Activity;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -20,6 +21,8 @@ import butterknife.ButterKnife;
 import butterknife.OnClick;
 
 public class MainActivity extends AppCompatActivity {
+
+    public static final int REQUEST_CODE = 1000;
 
     @BindView(R.id.fl__layout)
     FrameLayout flContainer;
@@ -102,7 +105,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void showSecondActivity() {
         Intent intent = SecondActivity.getCallingIntent(this);
-        startActivity(intent);
+        startActivityForResult(intent, REQUEST_CODE);
     }
 
     @Override
@@ -163,6 +166,11 @@ public class MainActivity extends AppCompatActivity {
         valueAnimator.start();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
     @OnClick(R.id.btn__click__2)
     public void doClick2() {
 
@@ -171,5 +179,15 @@ public class MainActivity extends AppCompatActivity {
     @OnClick(R.id.btn__click__3)
     public void doClick3() {
 
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_CODE) {
+            if (resultCode == Activity.RESULT_OK) {
+                animate();
+            }
+        }
     }
 }

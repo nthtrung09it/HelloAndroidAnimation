@@ -7,10 +7,12 @@ import android.os.Bundle;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AppCompatActivity;
+import android.widget.Button;
 import android.widget.ProgressBar;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 /**
  * @author Kernel
@@ -26,6 +28,8 @@ public class SecondActivity extends AppCompatActivity {
 
     @BindView(R.id.progress_bar)
     ProgressBar mProgressBar;
+    @BindView(R.id.btn__ok)
+    Button btnOk;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -50,5 +54,17 @@ public class SecondActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
 
+    }
+
+    @OnClick(R.id.btn__ok)
+    public void doOk() {
+        setResult(RESULT_OK);
+        finish();
+    }
+
+    @OnClick(R.id.btn__show_video)
+    public void showVideo() {
+        Intent intent = new Intent(this, VideoPlayerActivity.class);
+        startActivity(intent);
     }
 }

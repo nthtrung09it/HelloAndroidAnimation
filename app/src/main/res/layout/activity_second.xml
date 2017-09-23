@@ -14,5 +14,16 @@
         android:progress="0"
         android:progressDrawable="@drawable/progress_scale_drawable"/>
 
+    <Button
+        android:id="@+id/btn__ok"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="DONE"/>
+
+    <Button
+        android:id="@+id/btn__show_video"
+        android:layout_width="wrap_content"
+        android:text="SHOW VIDEO"
+        android:layout_height="wrap_content"/>
 
 </LinearLayout>
