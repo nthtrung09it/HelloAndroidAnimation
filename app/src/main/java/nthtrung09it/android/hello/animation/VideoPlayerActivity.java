@@ -1,18 +1,16 @@
 package nthtrung09it.android.hello.animation;
 
 import android.content.pm.ActivityInfo;
+import android.content.res.Configuration;
 import android.graphics.Matrix;
 import android.graphics.SurfaceTexture;
-import android.media.AudioManager;
-import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.support.annotation.LayoutRes;
 import android.support.annotation.Nullable;
+import android.support.v4.app.FragmentManager;
 import android.support.v7.app.AppCompatActivity;
 import android.view.Surface;
 import android.view.TextureView;
-
-import java.io.IOException;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -23,9 +21,10 @@ import butterknife.OnClick;
  * @version 1.0
  * @since 23/09/2017
  */
-public class VideoPlayerActivity extends AppCompatActivity implements TextureView.SurfaceTextureListener, MediaPlayer.OnPreparedListener, MediaPlayer.OnVideoSizeChangedListener {
+public class VideoPlayerActivity extends AppCompatActivity implements TextureView.SurfaceTextureListener {
 
     public static final String VIDEO_URL = "http://www.androidbegin.com/tutorial/AndroidCommercial.3gp";
+    private static final String TAG_MEDIAPLAYER_FRAGMENT = "MediaPlayerFragment";
 
     @BindView(R.id.texture_view)
     TextureView mTextureView;
@@ -33,7 +32,10 @@ public class VideoPlayerActivity extends AppCompatActivity implements TextureVie
     private int mInitialTextureWidth;
     private int mInitialTextureHeight;
 
-    private MediaPlayer mMediaPlayer;
+    private int mLastVideoWidth;
+    private int mLastVideoHeight;
+
+    private MediaPlayerFragment mMediaPlayerFragment;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -41,10 +43,13 @@ public class VideoPlayerActivity extends AppCompatActivity implements TextureVie
         setContentView(R.layout.activity_video_player);
 
         mTextureView.setSurfaceTextureListener(this);
-        if (!prepared) {
-            mMediaPlayer = new MediaPlayer();
-            mMediaPlayer.setOnVideoSizeChangedListener(this);
-            mMediaPlayer.setOnPreparedListener(this);
+
+        FragmentManager fm = getSupportFragmentManager();
+        mMediaPlayerFragment = (MediaPlayerFragment) fm.findFragmentByTag(TAG_MEDIAPLAYER_FRAGMENT);
+
+        if (mMediaPlayerFragment == null) {
+            mMediaPlayerFragment = MediaPlayerFragment.newInstance();
+            fm.beginTransaction().add(mMediaPlayerFragment, TAG_MEDIAPLAYER_FRAGMENT).commit();
         }
     }
 
@@ -54,8 +59,6 @@ public class VideoPlayerActivity extends AppCompatActivity implements TextureVie
         ButterKnife.bind(this);
     }
 
-    private boolean prepared = false;
-
     @Override
     public void onSurfaceTextureAvailable(SurfaceTexture surfaceTexture, int width, int height) {
 
@@ -63,18 +66,15 @@ public class VideoPlayerActivity extends AppCompatActivity implements TextureVie
         mInitialTextureHeight = height;
 
         Surface surface = new Surface(surfaceTexture);
-//        mMediaPlayer.setSurface(surface);
+        mMediaPlayerFragment.mMediaPlayer.setSurface(surface);
 
-        if (!prepared) {
-            prepared = true;
-
-            try {
-                mMediaPlayer.setDataSource(VIDEO_URL);
-                mMediaPlayer.setAudioStreamType(AudioManager.STREAM_MUSIC);
-                mMediaPlayer.prepareAsync();
-            } catch (IOException e) {
-            }
+        if (mMediaPlayerFragment != null && mMediaPlayerFragment.mMediaPlayer != null) {
+            adjustAspectRatio(mInitialTextureWidth, mInitialTextureHeight, mMediaPlayerFragment.mMediaPlayer.getVideoWidth(), mMediaPlayerFragment.mMediaPlayer.getVideoHeight());
         }
+    }
+
+    public void adjustAspectRatio(int videoWidth, int videoHeight) {
+        adjustAspectRatio(mInitialTextureWidth, mInitialTextureHeight, videoWidth, videoHeight);
     }
 
     private void adjustAspectRatio(int viewWidth, int viewHeight, int videoWidth, int videoHeight) {
@@ -103,7 +103,9 @@ public class VideoPlayerActivity extends AppCompatActivity implements TextureVie
 
     @Override
     public void onSurfaceTextureSizeChanged(SurfaceTexture surface, int width, int height) {
-        adjustAspectRatio(mInitialTextureWidth, mInitialTextureHeight, width, height);
+        if (mMediaPlayerFragment != null && mMediaPlayerFragment.mMediaPlayer != null) {
+            adjustAspectRatio(mInitialTextureWidth, mInitialTextureHeight, mMediaPlayerFragment.mMediaPlayer.getVideoWidth(), mMediaPlayerFragment.mMediaPlayer.getVideoHeight());
+        }
     }
 
     @Override
@@ -116,23 +118,6 @@ public class VideoPlayerActivity extends AppCompatActivity implements TextureVie
 
     }
 
-    @Override
-    public void onPrepared(MediaPlayer mp) {
-        mp.start();
-    }
-
-
-    private void releaseMediaPlayer() {
-
-        if (mMediaPlayer != null) {
-            if (mMediaPlayer.isPlaying()) {
-                mMediaPlayer.stop();
-            }
-            mMediaPlayer.release();
-            mMediaPlayer = null;
-        }
-    }
-
     @OnClick(R.id.btn__full)
     public void showFull() {
         if (getRequestedOrientation() == ActivityInfo.SCREEN_ORIENTATION_LANDSCAPE) {
@@ -143,15 +128,7 @@ public class VideoPlayerActivity extends AppCompatActivity implements TextureVie
     }
 
     @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (isFinishing()) {
-            releaseMediaPlayer();
-        }
-    }
-
-    @Override
-    public void onVideoSizeChanged(MediaPlayer mp, int width, int height) {
-        adjustAspectRatio(mInitialTextureWidth, mInitialTextureHeight, width, height);
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
     }
 }
